@@ -7,7 +7,7 @@
     "start": "cross-env NODE_ENV=production node src/app.js",
     "start:appdev": "cross-env NODE_ENV=development nodemon src/app.js",
     "start:webdev": "cross-env NODE_ENV=development webpack-dev-server --mode=development --watch",
-    "build": "webpack",
+    "build": "cross-env NODE_ENV=production webpack --mode=production",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --config ./.prettierrc --write \"{src,web}/**/*\"",
     "format:check": "prettier --config ./.prettierrc --list-different \"{src,web}/**/*\"",
