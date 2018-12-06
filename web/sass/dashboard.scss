@@ -1,0 +1,24 @@
+body {
+  font-size: 0.875rem;
+}
+
+[role='main'] {
+  padding-top: 48px; /* Space for fixed navbar */
+}
+
+.endpoints__table {
+  font-size: 1.125rem;
+
+  & a {
+    font-weight: 400 !important;
+  }
+
+  & td,
+  & th {
+    vertical-align: middle;
+  }
+}
+
+.endpoints__form {
+  font-size: 1rem;
+}

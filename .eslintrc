@@ -1,0 +1,30 @@
+{
+  "extends": "airbnb",
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "func-style": "off",
+    "no-underscore-dangle": "off",
+    "no-unused-vars": "warn",
+    "no-case-declarations": "warn",
+    "linebreak-style": "warn",
+    "prefer-spread": "warn",
+    "prefer-destructuring": "warn",
+    "jsx-a11y/label-has-associated-control": ["error", {
+      "controlComponents": ["select"]
+    }],
+    "jsx-a11y/label-has-for": ["error", {
+      "required": {
+        "some": ["nesting", "id"]
+      }
+    }],
+    "operator-linebreak": ["error", "after"],
+    "object-curly-newline": ["error", {
+      "multiline": true,
+      "consistent": true
+    }],
+    "arrow-parens": ["error", "as-needed"]
+  }
+}
