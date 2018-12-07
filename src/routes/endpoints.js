@@ -49,10 +49,11 @@ function setupEndpointRoutes(app) {
   });
 
   app.post('/__api/endpoints', (req, res) => {
-    const { route, redirect, status, body, method } = req.body;
+    const { route, redirect, status, body, method, headers } = req.body;
 
     // TODO: Make this validation check better!
     // Quick validation check
+    // NOTE: headers are optional
     if (
       !route ||
       !status ||
@@ -77,6 +78,7 @@ function setupEndpointRoutes(app) {
         method,
         status,
         body,
+        headers,
         id: newId,
         route: fixedRoute,
         redirect: fixedRedirect,
@@ -95,7 +97,7 @@ function setupEndpointRoutes(app) {
 
   app.put('/__api/endpoints/:id', (req, res) => {
     const { params } = req;
-    const { route, redirect, status, body, method } = req.body;
+    const { route, redirect, status, body, method, headers } = req.body;
 
     // TODO: Does this check need to be here?
     if (!params.id) {
@@ -108,6 +110,7 @@ function setupEndpointRoutes(app) {
 
     // TODO: Make this validation check better!
     // Quick validation check
+    // NOTE: headers are optional
     if (
       !route ||
       !status ||
@@ -144,6 +147,7 @@ function setupEndpointRoutes(app) {
       method,
       status,
       body,
+      headers,
       id: newId,
       route: fixedRoute,
       redirect: fixedRedirect,
@@ -199,14 +203,27 @@ function setupEndpointRoutes(app) {
 
   // MARK: Endpoint Mock Middleware
   app.use((req, res, next) => {
+    /* eslint-disable no-console */
     console.log('================================================');
     console.log('Inside Endpoint Mock Middleware!');
     console.log(req.path);
+    /* eslint-enable no-console */
 
     const endpoint = _endpoints.find(e => new RegExp(`^${e.route}$`).test(req.path));
     if (endpoint) {
+      /* eslint-disable no-console */
       console.log(`Custom Endpoint Detected! ${endpoint.route}`);
       console.log(`Mock Endpoint: ${JSON.stringify(endpoint)}`);
+      /* eslint-enable no-console */
+
+      // Attach Headers (if they are present)
+      if (endpoint.headers && endpoint.headers.length > 0) {
+        const headers = {};
+        endpoint.headers.forEach(([name, value]) => {
+          headers[name] = value;
+        });
+        res.set(headers);
+      }
 
       // handle redirects
       if (endpoint.status >= 300 && endpoint.status < 400) {
@@ -225,6 +242,7 @@ function setupEndpointRoutes(app) {
       newRes.end();
       return;
     }
+    // eslint-disable-next-line
     console.log('No custom endpoint detected, proceeding...');
     next();
   });
