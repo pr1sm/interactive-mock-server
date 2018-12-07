@@ -16,6 +16,7 @@ class EndpointDetail extends React.Component {
         body: '',
         method: 'GET',
         redirect: '',
+        headers: [],
       },
       formState: FormState.readOnly,
     };
@@ -57,7 +58,10 @@ class EndpointDetail extends React.Component {
         })
         .then(json => {
           this.setState({
-            endpoint: json.endpoint,
+            endpoint: {
+              ...json.endpoint,
+              forceUpdate: true,
+            },
           });
         })
         .catch(err => {
@@ -97,6 +101,17 @@ class EndpointDetail extends React.Component {
         }
         break;
       }
+      case 'headers': {
+        if (evt) {
+          this.setState({
+            endpoint: {
+              ...endpoint,
+              headers: evt,
+            },
+          });
+        }
+        break;
+      }
       default: {
         if (evt && evt.target) {
           this.setState({
@@ -111,16 +126,18 @@ class EndpointDetail extends React.Component {
   }
 
   handleDelete() {
+    // eslint-disable-next-line
     if (window.confirm('Do you really want to delete this endpoint?')) {
       const { match, history } = this.props;
       fetch(`/__api/endpoints/${match.params.id}`, {
         method: 'DELETE',
       })
         .then(res => res.json())
-        .then(json => {
-          console.log(JSON.stringify(json));
+        .then(() => {
+          // TODO: Ensure no errors are in the json payload before pushing
           history.push('/__dashboard/endpoints');
         })
+        // TODO: handle this error
         .catch(err => console.log(err));
     }
   }
@@ -137,9 +154,10 @@ class EndpointDetail extends React.Component {
   handleUpdate(evt) {
     evt.preventDefault();
     const { endpoint } = this.state;
-    const { method, route, status, body, redirect } = endpoint;
+    const { method, route, status, body, redirect, headers } = endpoint;
     const { history, match } = this.props;
     if (status === 0) {
+      // eslint-disable-next-line
       alert('Please specify a valid response status!');
       return;
     }
@@ -152,6 +170,7 @@ class EndpointDetail extends React.Component {
         status,
         body,
         redirect,
+        headers,
       }),
       headers: { 'Content-Type': 'application/json' },
     })
@@ -166,6 +185,7 @@ class EndpointDetail extends React.Component {
           history.replace(`/__dashboard/endpoints/${json.endpoint.id}`);
         }
       })
+      // TODO: Handle this error
       .catch(err => console.log(err));
   }
 

@@ -14,6 +14,7 @@ class NewEndpoint extends React.Component {
       route: '',
       method: 'GET',
       redirect: '',
+      headers: [],
     };
 
     this.handleCreate = this.handleCreate.bind(this);
@@ -45,6 +46,14 @@ class NewEndpoint extends React.Component {
         }
         break;
       }
+      case 'headers': {
+        if (evt) {
+          this.setState({
+            headers: evt,
+          });
+        }
+        break;
+      }
       default: {
         if (evt && evt.target) {
           this.setState({
@@ -57,9 +66,10 @@ class NewEndpoint extends React.Component {
 
   handleCreate(evt) {
     evt.preventDefault();
-    const { method, route, status, body, redirect } = this.state;
+    const { method, route, status, body, redirect, headers } = this.state;
     const { history } = this.props;
     if (status === 0) {
+      // eslint-disable-next-line
       alert('Please specify a valid response status!');
       return;
     }
@@ -72,6 +82,7 @@ class NewEndpoint extends React.Component {
         status,
         body,
         redirect,
+        headers,
       }),
       headers: { 'Content-Type': 'application/json' },
     })
@@ -81,6 +92,7 @@ class NewEndpoint extends React.Component {
           history.push('/__dashboard/endpoints');
         }
       })
+      // TODO: Handle this error
       .catch(err => console.log(err));
   }
 
