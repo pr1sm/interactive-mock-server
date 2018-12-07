@@ -1,5 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import shortId from 'shortid';
+
+import ResponseHeaderInputTable from './responseHeaderInputTable';
 
 export const FormState = {
   readOnly: 0,
@@ -122,6 +125,23 @@ class EndpointForm extends React.Component {
     );
   }
 
+  renderHeaderInputTable() {
+    const { formState, endpoint, onInputChange } = this.props;
+    const handleHeadersChange = headers => {
+      onInputChange('headers', headers);
+    };
+    // Check if we need to rerender the table
+    const key = !endpoint.forceUpdate ? 'create' : shortId.generate();
+    return (
+      <ResponseHeaderInputTable
+        key={key}
+        isEditing={formState !== FormState.readOnly}
+        initialHeaders={endpoint.headers}
+        onHeadersChange={handleHeadersChange}
+      />
+    );
+  }
+
   render() {
     const {
       formState,
@@ -202,6 +222,9 @@ class EndpointForm extends React.Component {
               />
             </label>
           </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group col no-gutters">{this.renderHeaderInputTable()}</div>
         </div>
         {this.renderFormBottomRow()}
       </form>

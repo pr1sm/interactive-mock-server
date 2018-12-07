@@ -25,6 +25,7 @@ class EndpointList extends React.Component {
       }, 30000);
     }
 
+    // TODO: Cancel these fetch calls if they are inprogress during unmount
     this.fetchEndpoints();
   }
 
@@ -41,12 +42,12 @@ class EndpointList extends React.Component {
     })
       .then(res => res.json())
       .then(json => {
-        console.log(`Received Success response: ${JSON.stringify(json)}`);
         this.setState({
           endpoints: json.endpoints,
         });
       })
       .catch(json => {
+        // TODO: Handle this error
         console.log(`Received error response: ${json}`);
       });
   }
@@ -55,15 +56,17 @@ class EndpointList extends React.Component {
     return () => {
       const prompt = `Do you really want to delete ${id ? 'this endpoint' : 'all endpoints'}?`;
       const url = `/__api/endpoints${id ? `/${id}` : ''}`;
+      // eslint-disable-next-line
       if (window.confirm(prompt)) {
         fetch(url, {
           method: 'DELETE',
         })
           .then(res => res.json())
-          .then(json => {
-            console.log(`Received Success response: ${JSON.stringify(json)}`);
+          .then(() => {
+            // TODO: Check json payload for errors before fetching endpoints again
             this.fetchEndpoints();
           })
+          // TODO: Handle this error
           .catch(err => console.log(err));
       }
     };

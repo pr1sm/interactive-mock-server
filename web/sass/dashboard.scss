@@ -15,7 +15,14 @@ body {
 
   & td,
   & th {
+    font-weight: 400 !important;
     vertical-align: middle;
+  }
+
+  &__col {
+    &--slim {
+      max-width: 1.75rem;
+    }
   }
 }
 
