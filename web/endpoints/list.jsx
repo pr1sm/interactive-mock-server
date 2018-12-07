@@ -25,6 +25,7 @@ class EndpointList extends React.Component {
       }, 30000);
     }
 
+    // TODO: Cancel these fetch calls if they are inprogress during unmount
     this.fetchEndpoints();
   }
 
