@@ -227,7 +227,8 @@ function setupEndpointRoutes(app) {
 
       // handle redirects
       if (endpoint.status >= 300 && endpoint.status < 400) {
-        res.redirect(endpoint.status, endpoint.redirect).end();
+        res.redirect(endpoint.status, endpoint.redirect);
+        res.end();
         return;
       }
 

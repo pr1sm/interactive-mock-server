@@ -20,4 +20,21 @@ app.use(/\/__dashboard.*/, (req, res) => {
 
 setupApiRoutes(app);
 
+// Setup final handler for defaulting to 404s
+app.use('*', (req, res) => {
+  res.status(404);
+
+  if (req.accepts('html')) {
+    res.set('Content-Type', 'text/html');
+    res.send('404 Not Found').end();
+    return;
+  }
+  if (req.accepts('json')) {
+    res.send({ error: 'Not Found', status: 404 }).end();
+    return;
+  }
+
+  res.type('txt').send('404 Not Found').end();
+});
+
 app.listen(PORT);
