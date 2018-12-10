@@ -74,14 +74,15 @@ function setupEndpointRoutes(app) {
       } else if (redirect.startsWith('/')) {
         fixedRedirect = redirect;
       }
+      const fixedHeaders = headers.map(([name, value]) => ([name, value]));
       const newEndpoint = {
         method,
         status,
         body,
-        headers,
         id: newId,
         route: fixedRoute,
         redirect: fixedRedirect,
+        headers: fixedHeaders,
       };
       _endpoints.push(newEndpoint);
 
@@ -143,14 +144,16 @@ function setupEndpointRoutes(app) {
     } else if (redirect.startsWith('/')) {
       fixedRedirect = redirect;
     }
+    const fixedHeaders = headers.map(([name, value]) => ([name, value]));
+
     const newEndpoint = {
       method,
       status,
       body,
-      headers,
       id: newId,
       route: fixedRoute,
       redirect: fixedRedirect,
+      headers: fixedHeaders,
     };
 
     _endpoints[idx] = newEndpoint;
