@@ -164,7 +164,11 @@ function setupEndpointRoutes(app, store) {
     console.log(req.path);
     /* eslint-enable no-console */
 
-    let endpoint = store.endpoints.find(e => new RegExp(`^${e.route}$`).test(req.path));
+    const endpoint = store.endpoints.find(e => {
+      const routeTest = new RegExp(`^${e.route}$`).test(req.path);
+      const methodTest = new RegExp(`^${e.method}$`, 'i').test(req.method);
+      return routeTest && methodTest;
+    });
     if (!endpoint) {
       // eslint-disable-next-line
       console.log('No custom endpoint detected, proceeding...');
@@ -172,36 +176,46 @@ function setupEndpointRoutes(app, store) {
       return;
     }
 
-    // transform to deprecated structure
-    endpoint = store.transformV0(endpoint);
     /* eslint-disable no-console */
     console.log(`Custom Endpoint Detected! ${endpoint.route}`);
     console.log(`Mock Endpoint: ${JSON.stringify(endpoint)}`);
     /* eslint-enable no-console */
 
+    const {
+      response: { statusCode, redirect, headers, body, mimeType },
+    } = endpoint;
+
     // Attach Headers (if they are present)
-    if (endpoint.headers && endpoint.headers.length > 0) {
-      const headers = {};
-      endpoint.headers.forEach(([name, value]) => {
-        headers[name] = value;
+    const headerMap = {};
+    if (headers && headers.length > 0) {
+      headers.forEach(([name, value]) => {
+        headerMap[name] = value;
       });
-      res.set(headers);
+      res.set(headerMap);
     }
 
     // handle redirects
-    if (endpoint.status >= 300 && endpoint.status < 400) {
-      res.redirect(endpoint.status, endpoint.redirect);
+    if (statusCode >= 300 && statusCode < 400) {
+      res.redirect(statusCode, redirect);
       res.end();
       return;
     }
 
     // Setup message sending type
-    let newRes = res.status(endpoint.status);
+    let newRes = res.status(statusCode);
     try {
-      const json = JSON.parse(endpoint.body);
+      // If we can parse json, use the json mime type (if it hasn't been set already)
+      const json = JSON.parse(body);
+      if (!headerMap['Content-Type']) {
+        res.type('json');
+      }
       newRes = res.json(json);
     } catch (e) {
-      newRes = res.send(endpoint.body);
+      // use the mime type given to us (if Content-Type hasn't been set already)
+      if (!headerMap['Content-Type']) {
+        res.type(mimeType);
+      }
+      newRes = res.send(body);
     }
     newRes.end();
   });
