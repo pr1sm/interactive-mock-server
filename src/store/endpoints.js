@@ -34,12 +34,15 @@ class EndpointStore {
 
     // Fill in optional data
     const { route, response } = newEndpoint;
-    const { statusCode, redirect, mimeType, headers } = response;
+    const { statusCode, redirect, mimeType, headers, body } = response;
 
+    // Calculate ID
     let newId = shortId.generate();
     while (this.getEndpoint(newId)) {
       newId = shortId.generate();
     }
+
+    // Transform data to the correct format
     const fixedRoute = route.startsWith('/') ? route : `/${route}`;
     let fixedRedirect = `/${redirect}`;
     if (statusCode < 300 || statusCode >= 400) {
@@ -48,10 +51,21 @@ class EndpointStore {
       fixedRedirect = redirect;
     }
 
+    // Perform some initial mimeType checking on the body text
+    // TODO: Add more tests (maybe move to a utility function?)
+    let fixedMimeType = mimeType || 'text/plain';
+    try {
+      JSON.parse(body);
+      fixedMimeType = 'application/json';
+    } catch (_) {
+      // SyntaxError, so it's definitely not JSON, default it to plaintext
+      fixedMimeType = 'text/plain';
+    }
+
     newEndpoint.id = newId;
     newEndpoint.route = fixedRoute;
     newEndpoint.response.redirect = fixedRedirect;
-    newEndpoint.response.mimeType = mimeType || 'text/plain';
+    newEndpoint.response.mimeType = fixedMimeType;
     if (headers) {
       newEndpoint.response.headers = headers.map(([name, value]) => [name, value]);
     }
