@@ -1,6 +1,8 @@
 const graphql = require('graphql');
 const graphqlHTTP = require('express-graphql');
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const {
   GraphQLEnumType,
   GraphQLInt,
@@ -253,7 +255,7 @@ function setupGraphQLEndpointRoutes(app, route, store) {
     graphqlHTTP({
       schema,
       rootValue: store,
-      graphiql: true, // TODO: Use NODE_ENV to conditionally enable this
+      graphiql: isDevelopment,
     }),
   );
 }
