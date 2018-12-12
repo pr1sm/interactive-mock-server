@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import FeatherIcon from '../common/icon';
 import '../sass/dashboard.scss';
+import queries from '../utils/queries';
 
 class EndpointList extends React.Component {
   constructor(props) {
@@ -37,18 +38,38 @@ class EndpointList extends React.Component {
   }
 
   fetchEndpoints() {
-    fetch('/__api/endpoints', {
-      method: 'GET',
+    fetch('/__api/endpoints/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        query: queries.endpoints.list,
+      }),
     })
-      .then(res => res.json())
+      .then(async res => {
+        const json = await res.json();
+        if (!res.ok) {
+          const error = new Error('ResponseError');
+          error.json = json;
+          throw error;
+        }
+        if (json.errors) {
+          const error = new Error('GraphQLError');
+          error.json = json;
+          throw error;
+        }
+        return json;
+      })
       .then(json => {
         this.setState({
-          endpoints: json.endpoints,
+          endpoints: json.data.endpoints,
         });
       })
-      .catch(json => {
+      .catch(err => {
         // TODO: Handle this error
-        console.log(`Received error response: ${json}`);
+        console.log(`Received error response: ${JSON.stringify(err.json, null, 2)}`);
       });
   }
 
@@ -73,21 +94,27 @@ class EndpointList extends React.Component {
   }
 
   renderEndpointTableRow(endpoint) {
+    const {
+      id,
+      method,
+      route,
+      response: { statusCode, body, redirect },
+    } = endpoint;
     return (
-      <tr key={endpoint.id}>
+      <tr key={id}>
         <th scope="row">
-          <Link to={`/__dashboard/endpoints/${endpoint.id}`}>{endpoint.id}</Link>
+          <Link to={`/__dashboard/endpoints/${id}`}>{id}</Link>
         </th>
-        <td>{endpoint.method}</td>
-        <td>{endpoint.route}</td>
-        <td>{endpoint.status}</td>
-        <td>{endpoint.body}</td>
-        <td>{endpoint.redirect || 'N/A'}</td>
+        <td>{method}</td>
+        <td>{route}</td>
+        <td>{statusCode}</td>
+        <td>{body}</td>
+        <td>{redirect || 'N/A'}</td>
         <td className="text-center">
           <button
             type="button"
             className="btn btn-sm btn-block btn-danger"
-            onClick={this.generateDeleteHandler(endpoint.id)}
+            onClick={this.generateDeleteHandler(id)}
           >
             <FeatherIcon icon="trash" />
           </button>
