@@ -111,24 +111,6 @@ class EndpointStore {
   deleteAllEndpoints() {
     this._endpoints.splice(0, this._endpoints.length);
   }
-
-  // Transform the structure into the deprecated V0 structure
-  // DEPRECATED
-  // eslint-disable-next-line
-  transformV0(endpoint) {
-    // ASSERT: endpoint is the correct stucture
-
-    return {
-      id: endpoint.id,
-      method: endpoint.method,
-      route: endpoint.route,
-      mimeType: endpoint.response.mimeType,
-      status: endpoint.response.statusCode,
-      body: endpoint.response.body,
-      headers: endpoint.response.headers,
-      redirect: endpoint.response.redirect,
-    };
-  }
 }
 
 module.exports = EndpointStore;
