@@ -1,5 +1,5 @@
 async function _graphqlFetch(body, uri) {
-  const res = await fetch(uri || '/__api/endpoints/graphql', {
+  const res = await fetch(uri || '/__api/endpoints', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
