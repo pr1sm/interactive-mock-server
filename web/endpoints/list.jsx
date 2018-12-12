@@ -88,7 +88,7 @@ class EndpointList extends React.Component {
       id,
       method,
       route,
-      response: { statusCode, body, redirect },
+      response: { statusCode, mimeType, redirect },
     } = endpoint;
     return (
       <tr key={id}>
@@ -98,7 +98,7 @@ class EndpointList extends React.Component {
         <td>{method}</td>
         <td>{route}</td>
         <td>{statusCode}</td>
-        <td>{body}</td>
+        <td>{mimeType}</td>
         <td>{redirect || 'N/A'}</td>
         <td className="text-center">
           <button
@@ -124,7 +124,7 @@ class EndpointList extends React.Component {
                 <th scope="col">Method</th>
                 <th scope="col">Route</th>
                 <th scope="col">Status</th>
-                <th scope="col">Body</th>
+                <th scope="col">MIME Type</th>
                 <th scope="col">Redirect Route</th>
                 <th scope="col">Delete</th>
               </tr>

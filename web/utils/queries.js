@@ -7,7 +7,6 @@ const _endpointListQuery = `{
       mimeType,
       headers,
       redirect,
-      body,
       statusCode
     }
   }
