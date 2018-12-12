@@ -138,7 +138,7 @@ class EndpointForm extends React.Component {
       <ResponseHeaderInputTable
         key={key}
         isEditing={formState !== FormState.readOnly}
-        initialHeaders={endpoint.headers}
+        initialHeaders={endpoint.response.headers}
         onHeadersChange={handleHeadersChange}
       />
     );
