@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import FeatherIcon from '../common/icon';
 import '../sass/dashboard.scss';
+import graphqlFetch from '../utils/graphQLFetch';
 import queries from '../utils/queries';
 
 class EndpointList extends React.Component {
@@ -38,30 +39,9 @@ class EndpointList extends React.Component {
   }
 
   fetchEndpoints() {
-    fetch('/__api/endpoints/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        query: queries.endpoints.list,
-      }),
+    graphqlFetch({
+      query: queries.endpoints.list,
     })
-      .then(async res => {
-        const json = await res.json();
-        if (!res.ok) {
-          const error = new Error('ResponseError');
-          error.json = json;
-          throw error;
-        }
-        if (json.errors) {
-          const error = new Error('GraphQLError');
-          error.json = json;
-          throw error;
-        }
-        return json;
-      })
       .then(json => {
         this.setState({
           endpoints: json.data.endpoints,

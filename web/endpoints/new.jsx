@@ -3,6 +3,7 @@ import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import EndpointForm, { FormState } from './form';
+import graphqlFetch from '../utils/graphQLFetch';
 import mutations from '../utils/mutations';
 
 class NewEndpoint extends React.Component {
@@ -105,31 +106,10 @@ class NewEndpoint extends React.Component {
       ...this.state,
     };
 
-    fetch('/__api/endpoints/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        query: mutations.endpoints.create,
-        variables: { data },
-      }),
+    graphqlFetch({
+      query: mutations.endpoints.create,
+      variables: { data },
     })
-      .then(async res => {
-        const json = await res.json();
-        if (!res.ok) {
-          const error = new Error('ResponseError');
-          error.json = json;
-          throw error;
-        }
-        if (json.errors) {
-          const error = new Error('GraphQLError');
-          error.json = json;
-          throw error;
-        }
-        return json;
-      })
       .then(() => {
         history.push('/__dashboard/endpoints');
       })

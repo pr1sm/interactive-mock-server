@@ -3,6 +3,7 @@ import { withRouter, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import EndpointForm, { FormState } from './form';
+import graphqlFetch from '../utils/graphQLFetch';
 import queries from '../utils/queries';
 import mutations from '../utils/mutations';
 
@@ -49,31 +50,10 @@ class EndpointDetail extends React.Component {
     const { match } = this.props;
     if (match && match.params && match.params.id) {
       // Get the endpoint info and set the state
-      fetch('/__api/endpoints/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          query: queries.endpoints.single,
-          variables: { id: match.params.id },
-        }),
+      graphqlFetch({
+        query: queries.endpoints.single,
+        variables: { id: match.params.id },
       })
-        .then(async res => {
-          const json = await res.json();
-          if (!res.ok) {
-            const error = new Error('ResponseError');
-            error.json = json;
-            throw error;
-          }
-          if (json.errors) {
-            const error = new Error('GraphQLError');
-            error.json = json;
-            throw error;
-          }
-          return json;
-        })
         .then(json => {
           this.setState({
             endpoint: {
@@ -173,31 +153,10 @@ class EndpointDetail extends React.Component {
     if (window.confirm('Do you really want to delete this endpoint?')) {
       const { match, history } = this.props;
 
-      fetch('/__api/endpoints/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          query: mutations.endpoints.delete,
-          variables: { id: match.params.id },
-        }),
+      graphqlFetch({
+        query: mutations.endpoints.delete,
+        variables: { id: match.params.id },
       })
-        .then(async res => {
-          const json = await res.json();
-          if (!res.ok) {
-            const error = new Error('ResponseError');
-            error.json = json;
-            throw error;
-          }
-          if (json.errors) {
-            const error = new Error('GraphQLError');
-            error.json = json;
-            throw error;
-          }
-          return json;
-        })
         .then(() => {
           history.push('/__dashboard/endpoints');
         })
@@ -232,34 +191,13 @@ class EndpointDetail extends React.Component {
       forceUpdate: undefined,
     };
 
-    fetch('/__api/endpoints/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    graphqlFetch({
+      query: mutations.endpoints.replace,
+      variables: {
+        id: match.params.id,
+        data,
       },
-      body: JSON.stringify({
-        query: mutations.endpoints.replace,
-        variables: {
-          id: match.params.id,
-          data,
-        },
-      }),
     })
-      .then(async res => {
-        const json = await res.json();
-        if (!res.ok) {
-          const error = new Error('ResponseError');
-          error.json = json;
-          throw error;
-        }
-        if (json.errors) {
-          const error = new Error('GraphQLError');
-          error.json = json;
-          throw error;
-        }
-        return json;
-      })
       .then(json => {
         this.setState({
           prevEndpoint: json.data.replaceEndpoint,
