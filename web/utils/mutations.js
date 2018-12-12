@@ -34,10 +34,17 @@ const _endpointDeleteMutation = `mutation DeleteEndpoint($id: String!) {
   }
 }`;
 
+const _endpointDeleteAllMutation = `mutation DeleteAllEndpoints {
+  deleteAllEndpoints {
+    id
+  }
+}`;
+
 export default {
   endpoints: {
     create: _endpointCreateMutation,
     replace: _endpointReplaceMutation,
     delete: _endpointDeleteMutation,
+    deleteAll: _endpointDeleteAllMutation,
   },
 };

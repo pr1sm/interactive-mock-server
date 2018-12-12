@@ -213,6 +213,10 @@ const endpointsMutationType = new graphql.GraphQLObjectType({
       },
       resolve: (root, { id }) => root.deleteEndpoint(id),
     },
+    deleteAllEndpoints: {
+      type: GraphQLList(GraphQLNonNull(endpointType)),
+      resolve: root => root.deleteAllEndpoints(),
+    },
   }),
 });
 

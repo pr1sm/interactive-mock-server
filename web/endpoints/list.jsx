@@ -5,6 +5,7 @@ import FeatherIcon from '../common/icon';
 import '../sass/dashboard.scss';
 import graphqlFetch from '../utils/graphQLFetch';
 import queries from '../utils/queries';
+import mutations from '../utils/mutations';
 
 class EndpointList extends React.Component {
   constructor(props) {
@@ -56,19 +57,28 @@ class EndpointList extends React.Component {
   generateDeleteHandler(id) {
     return () => {
       const prompt = `Do you really want to delete ${id ? 'this endpoint' : 'all endpoints'}?`;
-      const url = `/__api/endpoints${id ? `/${id}` : ''}`;
       // eslint-disable-next-line
       if (window.confirm(prompt)) {
-        fetch(url, {
-          method: 'DELETE',
-        })
-          .then(res => res.json())
-          .then(() => {
-            // TODO: Check json payload for errors before fetching endpoints again
-            this.fetchEndpoints();
+        if (id) {
+          graphqlFetch({
+            query: mutations.endpoints.delete,
+            variables: { id },
           })
-          // TODO: Handle this error
-          .catch(err => console.log(err));
+            .then(() => {
+              this.fetchEndpoints();
+            })
+            // TODO: Handle this error
+            .catch(err => console.log(err));
+        } else {
+          graphqlFetch({
+            query: mutations.endpoints.deleteAll,
+          })
+            .then(() => {
+              this.fetchEndpoints();
+            })
+            // TODO: Handle this error
+            .catch(err => console.log(err));
+        }
       }
     };
   }
