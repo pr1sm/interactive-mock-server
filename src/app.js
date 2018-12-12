@@ -3,9 +3,12 @@ const cors = require('cors');
 const path = require('path');
 
 const setupApiRoutes = require('./routes/api');
+const Store = require('./store');
 
 const PORT = process.env.PORT || 9000;
 const app = express();
+
+const store = new Store();
 
 app.use(cors());
 app.use(express.json());
@@ -18,7 +21,7 @@ app.use(/\/__dashboard.*/, (req, res) => {
   res.sendFile(path.resolve(__dirname, '..', 'dist', req.baseUrl.substring(1)));
 });
 
-setupApiRoutes(app);
+setupApiRoutes(app, store);
 
 // Setup final handler for defaulting to 404s
 app.use('*', (req, res) => {
@@ -34,7 +37,10 @@ app.use('*', (req, res) => {
     return;
   }
 
-  res.type('txt').send('404 Not Found').end();
+  res
+    .type('txt')
+    .send('404 Not Found')
+    .end();
 });
 
 app.listen(PORT);

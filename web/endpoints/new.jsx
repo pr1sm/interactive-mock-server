@@ -3,18 +3,22 @@ import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import EndpointForm, { FormState } from './form';
+import graphqlFetch from '../utils/graphQLFetch';
+import mutations from '../utils/mutations';
 
 class NewEndpoint extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      status: 200,
-      body: '',
       route: '',
       method: 'GET',
-      redirect: '',
-      headers: [],
+      response: {
+        statusCode: 200,
+        body: '',
+        redirect: '',
+        headers: [],
+      },
     };
 
     this.handleCreate = this.handleCreate.bind(this);
@@ -28,18 +32,25 @@ class NewEndpoint extends React.Component {
   }
 
   handleInput(type, evt) {
+    const { response } = this.state;
     switch (type) {
-      case 'status': {
+      case 'statusCode': {
         if (evt && evt.target) {
           if (evt.target.value === '') {
             this.setState({
-              status: 0,
+              response: {
+                ...response,
+                statusCode: 0,
+              },
             });
           } else {
             const parsed = parseInt(evt.target.value, 10);
             if (!Number.isNaN(parsed)) {
               this.setState({
-                status: parsed,
+                response: {
+                  ...response,
+                  statusCode: parsed,
+                },
               });
             }
           }
@@ -49,7 +60,22 @@ class NewEndpoint extends React.Component {
       case 'headers': {
         if (evt) {
           this.setState({
-            headers: evt,
+            response: {
+              ...response,
+              headers: evt,
+            },
+          });
+        }
+        break;
+      }
+      case 'body':
+      case 'redirect': {
+        if (evt && evt.target) {
+          this.setState({
+            response: {
+              ...response,
+              [type]: evt.target.value,
+            },
           });
         }
         break;
@@ -66,58 +92,29 @@ class NewEndpoint extends React.Component {
 
   handleCreate(evt) {
     evt.preventDefault();
-    const { method, route, status, body, redirect, headers } = this.state;
+    const {
+      response: { statusCode },
+    } = this.state;
     const { history } = this.props;
-    if (status === 0) {
+    if (statusCode === 0) {
       // eslint-disable-next-line
       alert('Please specify a valid response status!');
       return;
     }
 
-    fetch('/__api/endpoints', {
-      method: 'POST',
-      body: JSON.stringify({
-        method,
-        route,
-        status,
-        body,
-        redirect,
-        headers,
-      }),
-      headers: { 'Content-Type': 'application/json' },
+    const data = {
+      ...this.state,
+    };
+
+    graphqlFetch({
+      query: mutations.endpoints.create,
+      variables: { data },
     })
-      .then(res => res.json())
-      .then(json => {
-        if (!json.errors) {
-          history.push('/__dashboard/endpoints');
-        }
+      .then(() => {
+        history.push('/__dashboard/endpoints');
       })
       // TODO: Handle this error
       .catch(err => console.log(err));
-  }
-
-  renderRedirectRouteInput() {
-    const { status, redirect } = this.state;
-    // Only render for 3xx responses
-    if (status < 300 || status >= 400) {
-      return undefined;
-    }
-
-    return (
-      <div className="form-group col-md-6 no-gutters">
-        <label htmlFor="newRedirectRouteInput" className="col">
-          Redirect Route
-          <input
-            type="text"
-            className="form-control"
-            id="newRedirectRouteInput"
-            onChange={this.generateInputHandler('redirect')}
-            value={redirect}
-            required
-          />
-        </label>
-      </div>
-    );
   }
 
   render() {

@@ -3,6 +3,9 @@ import { withRouter, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import EndpointForm, { FormState } from './form';
+import graphqlFetch from '../utils/graphQLFetch';
+import queries from '../utils/queries';
+import mutations from '../utils/mutations';
 
 class EndpointDetail extends React.Component {
   constructor(props) {
@@ -11,12 +14,15 @@ class EndpointDetail extends React.Component {
     this.state = {
       prevEndpoint: null,
       endpoint: {
+        id: null,
         route: '',
-        status: 0,
-        body: '',
         method: 'GET',
-        redirect: '',
-        headers: [],
+        response: {
+          statusCode: 0,
+          body: '',
+          redirect: '',
+          headers: [],
+        },
       },
       formState: FormState.readOnly,
     };
@@ -44,33 +50,26 @@ class EndpointDetail extends React.Component {
     const { match } = this.props;
     if (match && match.params && match.params.id) {
       // Get the endpoint info and set the state
-      fetch(`/__api/endpoints/${match.params.id}`, {
-        method: 'GET',
+      graphqlFetch({
+        query: queries.endpoints.single,
+        variables: { id: match.params.id },
       })
-        .then(async res => {
-          if (res.ok) {
-            return res.json();
-          }
-          const body = await res.json();
-          const rethrow = new Error(body.message);
-          rethrow.error = body.error;
-          throw rethrow;
-        })
         .then(json => {
           this.setState({
             endpoint: {
-              ...json.endpoint,
+              ...json.data.endpoint,
               forceUpdate: true,
             },
           });
         })
         .catch(err => {
+          // TODO: Handle this error
           this.setState({
             endpoint: {
-              error: err.error,
-              message: err.message,
+              errors: err.json.errors,
             },
           });
+          console.log(`Received error response: ${JSON.stringify(err.json, null, 2)}`);
         });
     }
   }
@@ -78,13 +77,16 @@ class EndpointDetail extends React.Component {
   handleInput(type, evt) {
     const { endpoint } = this.state;
     switch (type) {
-      case 'status': {
+      case 'statusCode': {
         if (evt && evt.target) {
           if (evt.target.value === '') {
             this.setState({
               endpoint: {
                 ...endpoint,
-                status: 0,
+                response: {
+                  ...endpoint.response,
+                  statusCode: 0,
+                },
               },
             });
           } else {
@@ -93,7 +95,10 @@ class EndpointDetail extends React.Component {
               this.setState({
                 endpoint: {
                   ...endpoint,
-                  status: parsed,
+                  response: {
+                    ...endpoint.response,
+                    statusCode: parsed,
+                  },
                 },
               });
             }
@@ -106,7 +111,25 @@ class EndpointDetail extends React.Component {
           this.setState({
             endpoint: {
               ...endpoint,
-              headers: evt,
+              response: {
+                ...endpoint.response,
+                headers: evt,
+              },
+            },
+          });
+        }
+        break;
+      }
+      case 'body':
+      case 'redirect': {
+        if (evt && evt.target) {
+          this.setState({
+            endpoint: {
+              ...endpoint,
+              response: {
+                ...endpoint.response,
+                [type]: evt.target.value,
+              },
             },
           });
         }
@@ -129,15 +152,15 @@ class EndpointDetail extends React.Component {
     // eslint-disable-next-line
     if (window.confirm('Do you really want to delete this endpoint?')) {
       const { match, history } = this.props;
-      fetch(`/__api/endpoints/${match.params.id}`, {
-        method: 'DELETE',
+
+      graphqlFetch({
+        query: mutations.endpoints.delete,
+        variables: { id: match.params.id },
       })
-        .then(res => res.json())
         .then(() => {
-          // TODO: Ensure no errors are in the json payload before pushing
           history.push('/__dashboard/endpoints');
         })
-        // TODO: handle this error
+        // TODO: Handle this error
         .catch(err => console.log(err));
     }
   }
@@ -154,36 +177,34 @@ class EndpointDetail extends React.Component {
   handleUpdate(evt) {
     evt.preventDefault();
     const { endpoint } = this.state;
-    const { method, route, status, body, redirect, headers } = endpoint;
+    const { statusCode } = endpoint.response;
     const { history, match } = this.props;
-    if (status === 0) {
+    if (statusCode === 0) {
       // eslint-disable-next-line
       alert('Please specify a valid response status!');
       return;
     }
 
-    fetch(`/__api/endpoints/${match.params.id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        method,
-        route,
-        status,
-        body,
-        redirect,
-        headers,
-      }),
-      headers: { 'Content-Type': 'application/json' },
+    const data = {
+      ...endpoint,
+      id: undefined,
+      forceUpdate: undefined,
+    };
+
+    graphqlFetch({
+      query: mutations.endpoints.replace,
+      variables: {
+        id: match.params.id,
+        data,
+      },
     })
-      .then(res => res.json())
       .then(json => {
-        if (!json.errors) {
-          this.setState({
-            prevEndpoint: json.endpoint,
-            endpoint: json.endpoint,
-            formState: FormState.readOnly,
-          });
-          history.replace(`/__dashboard/endpoints/${json.endpoint.id}`);
-        }
+        this.setState({
+          prevEndpoint: json.data.replaceEndpoint,
+          endpoint: json.data.replaceEndpoint,
+          formState: FormState.readOnly,
+        });
+        history.replace(`/__dashboard/endpoints/${json.data.replaceEndpoint.id}`);
       })
       // TODO: Handle this error
       .catch(err => console.log(err));
@@ -191,13 +212,13 @@ class EndpointDetail extends React.Component {
 
   render() {
     const { endpoint, formState } = this.state;
-    const { error, message } = endpoint;
+    const { errors } = endpoint;
 
-    if (error) {
+    if (errors) {
       return (
         <div className="col">
-          <h3>Oops! There was an error retrieving this endpoint&apos;s details!</h3>
-          {`Reason: ${message}`}
+          <h3>Oops! There were errors retrieving this endpoint&apos;s details!</h3>
+          {`Reason: ${errors[0].message}`}
           <br />
           <Link to="/__dashboard/endpoints">Return to Endpoint List</Link>
         </div>

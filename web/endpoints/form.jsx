@@ -45,12 +45,14 @@ class EndpointForm extends React.Component {
 
   renderRedirectRouteInput() {
     const {
-      endpoint: { status, redirect },
+      endpoint: {
+        response: { statusCode, redirect },
+      },
       formState,
     } = this.props;
     const redirectValue = !formState ? redirect || 'N/A' : redirect;
     // Only render for 3xx responses when editing
-    if (formState && (status < 300 || status >= 400)) {
+    if (formState && (statusCode < 300 || statusCode >= 400)) {
       return undefined;
     }
 
@@ -146,7 +148,11 @@ class EndpointForm extends React.Component {
     const {
       formState,
       onFormSubmit,
-      endpoint: { route, status, method, body },
+      endpoint: {
+        route,
+        method,
+        response: { body, statusCode },
+      },
     } = this.props;
     const formInputProps = {
       className: `form-control${formState ? '' : '-plaintext'}`,
@@ -176,8 +182,8 @@ class EndpointForm extends React.Component {
               <input
                 type="number"
                 id="formStatusInput"
-                onChange={this.generateInputHandler('status')}
-                value={`${status}`}
+                onChange={this.generateInputHandler('statusCode')}
+                value={`${statusCode}`}
                 {...formInputProps}
               />
             </label>
