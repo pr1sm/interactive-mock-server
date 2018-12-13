@@ -1,0 +1,7 @@
+.babelrc
+.eslintrc
+.nodemonrc
+.prettierrc
+webpack.config.js
+yarn.lock
+web/
