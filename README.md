@@ -2,6 +2,31 @@
 
 An mock server that allows you to dynamically adjust mock endpoints in real-time!
 
+## Install and Run
+
+Install the mock server globally and run it:
+```sh
+# Install using yarn:
+$ yarn global add interactive-mock-server
+# Install using npm:
+$ npm install --global interactive-mock-server
+# Now use it!
+$ interactive-mock-server
+```
+
+You can also install it locally:
+```sh
+# Install using yarn:
+$ yarn add interactive-mock-server --dev
+# Install using npm:
+$ npm install --save-dev interactive-mock-server
+# Now use it!
+$ yarn interactive-mock-server
+$ npx interactive-mock-server
+```
+
+Once started, navigate to `localhost:9000/__dashboard` (see more info on the [dashboard](#using-the-dashboard))
+
 ## Overview
 
 Almost all mock server implementations provide the option to specify mock routes/endpoints 
@@ -22,7 +47,7 @@ response without having to stop and start the mock server over and over.
 
 ### Using the dashboard
 
-Once the server is started (see instructions on running below), You can navigate to the
+Once the server is started (see instructions [running](#install-and-run)), You can navigate to the
 dashboard page `/__dashboard`. This route exists as a way to prevent conflicts with other 
 potential mock endpoints. From this page, you can view endpoints (`/__dashboard/endpoints`), 
 create a new endpoint (`/__dashboard/endpoints/new`) or view/edit an existing endpoint 
@@ -30,18 +55,17 @@ create a new endpoint (`/__dashboard/endpoints/new`) or view/edit an existing en
 
 Once an endpoint has been created, it will be automatically enabled on the mock server. 
 
-## Running the Mock Server
-
-Instructions TBD! (You can use the contributing instructions for running in dev mode at this time)
-
 ## Contributing
+
+If you have a bug/feature request head over to the [issues](https://github.com/pr1sm/interactive-mock-server/issues) page. 
+All Issues and PRs are welcome!
 
 ### Debugging
 
 1. Clone the project
-2. Install dependencies: `npm install`
-3. Build the frontend: `npm run build`
-4. Launch the server: `npm run start:appdev`
+2. Install dependencies: `yarn install`
+3. Build the frontend: `yarn run build`
+4. Launch the server: `yarn run dev:app`
 5. Navigate to the dashboard: (default is `http://localhost:9000/__dashboard`)
 
 Created mock endpoints are available from the same base: `http://localhost:9000/`
@@ -50,7 +74,7 @@ Created mock endpoints are available from the same base: `http://localhost:9000/
 
 Repeat steps 1-4 above and
 
-5. Launch the webpack dev server: `npm run start:webdev`
+5. Launch the webpack dev server: `yarn run dev:web`
 6. Navigate to the development dashboard: (default is `http://localhost:9100/__dashboard`)
 
 > NOTE: The mock server must also be running in a separate terminal (Step 4). The dashboard uses 
